@@ -8,18 +8,18 @@ The precise number of quotes contained in the dataset is 624,001 quotes, with an
 
 **IMPORTANT ** Excel settings may not display the data in a structured way, you may have to go to the data tab and change the text to column settings to delimited by semicolon.
 
-**UPDATE ** The repository now contains all the code used for the project. Said code includes:
-- An URL generator which was used to extract all dates with information in the records.
-- Two scrapers one for 1996 to 1999 corresponding to an old data structure on the website of the EP and one for 1999 to 2024 which take the urls and extract the data from the website.
-- A script to merge all the individual sessions into one file per year(not taking into account election years which will still be separated)
-- A script removing the annex duplicates
-- A scraper of the MEP records and their preprocessing
-- A script for cross referencing the MEP data with the session records for accuracy.
+**UPDATE ** The repository now contains all the code used for the project. Said code, includes:
+- An URL generator, which was used to extract all dates with information in the records.
+- Two scrapers, one for 1996 to 1999 corresponding to an old data structure on the website of the EP, and one for 1999 to 2024, which take the urls and extract the data from the website.
+- A script to merge all the individual sessions into one file per year (not taking into account election years, which will still be separated).
+- A script removing the annex duplicates.
+- A scraper of the MEP records and their preprocessing.
+- A script for cross-referencing the MEP data with the session records for accuracy.
 - A script for the translation of the records from 2012.
 - A script for the preprocessing of the speaker, party and date columns.
 - A script for the preprocessing of the quote column containing the text.
   
-**TAKE INTO ACCOUNT ** The final data as uploaded on the repo was also improved and fine tuned manually for details like removing unimportant columns and rows, ensuring country accuracy as some years in the original EP records mixed Austrian and German MEPS or Dutch and Flemish MEPS, or merging the election years into single files (when possible).
+**TAKE INTO ACCOUNT ** The final data as uploaded on the repo was also improved and fine-tuned manually for details like removing unimportant columns and rows, ensuring country accuracy as some years in the original EP records mixed Austrian and German MEPS or Dutch and Flemish MEPS, or merging the election years into single files (when possible).
 </div>
 
 ## Quotes per Year and Number of Quotes in Writing
