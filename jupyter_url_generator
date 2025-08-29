@@ -6,7 +6,7 @@ import requests
 from datetime import datetime, timedelta
 
 # Set the working directory
-os.chdir(r"C:\Users\pablo\OneDrive\Escritorio\Masters\Year_2\eu_database_project\raw_data\1994-1999_CRE-4\1999\urls")
+os.chdir()
 
 def get_cre_number(date):
     # Define legislature start and end dates
