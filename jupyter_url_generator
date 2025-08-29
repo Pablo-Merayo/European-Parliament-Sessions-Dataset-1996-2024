@@ -1,0 +1,178 @@
+#Working URL generator 1994-2024 with existance checks
+# FOR USE MAKE SURE TO CUSTOMIZE DATES IN THE MAIN FUNCTION
+import csv
+import os
+import requests
+from datetime import datetime, timedelta
+
+# Set the working directory
+os.chdir(r"C:\Users\pablo\OneDrive\Escritorio\Masters\Year_2\eu_database_project\raw_data\1994-1999_CRE-4\1999\urls")
+
+def get_cre_number(date):
+    # Define legislature start and end dates
+    legislature_periods = [
+        (datetime(1994, 7, 19), datetime(1999, 7, 19), 4),
+        (datetime(1999, 7, 20), datetime(2004, 7, 19), 5),
+        (datetime(2004, 7, 20), datetime(2009, 7, 13), 6),
+        (datetime(2009, 7, 14), datetime(2014, 6, 30), 7),
+        (datetime(2014, 7, 1), datetime(2019, 7, 1), 8),
+        (datetime(2019, 7, 2), datetime(2024, 7, 1), 9),
+    ]
+
+    for start_date, end_date, cre_number in legislature_periods:
+        if start_date <= date <= end_date:
+            return cre_number
+    
+    raise ValueError("Date does not fall within any known legislature period.")
+
+def url_exists(url, timeout=15):
+    """Check if the URL exists and returns True if it does, False otherwise."""
+    try:
+        response = requests.get(url, allow_redirects=True, timeout=timeout)
+        if response.status_code == 200:
+            return True
+        else:
+            print(f"URL check failed (Status Code: {response.status_code}): {url}")
+    except requests.RequestException as e:
+        print(f"Error checking URL: {url} | Error: {e}")
+    return False
+
+def generate_urls(start_date, end_date, itm_start, itm_end):
+    urls = []
+    current_date = start_date
+    
+    while current_date <= end_date:
+        date_str = current_date.strftime('%Y-%m-%d')
+        cre_number = get_cre_number(current_date)
+        
+        for itm in range(itm_start, itm_end + 1):
+            url = f"https://www.europarl.europa.eu/doceo/document/CRE-{cre_number}-{date_str}-ITM-{itm:03d}_EN.html"
+            if url_exists(url):
+                urls.append(url)
+                # Check additional URLs for this itm
+                for number in range(1, 50):
+                    # Adjust the format based on the number
+                    if number < 10:
+                        additional_url = f"https://www.europarl.europa.eu/doceo/document/CRE-{cre_number}-{date_str}-ITM-{itm:03d}-0{number}_EN.html"
+                    else:
+                        additional_url = f"https://www.europarl.europa.eu/doceo/document/CRE-{cre_number}-{date_str}-ITM-{itm:03d}-{number}_EN.html"
+                    
+                    if url_exists(additional_url):
+                        urls.append(additional_url)
+                    else:
+                        # Stop checking further additional URLs if one does not exist
+                        break
+            else:
+                # Stop checking further itm numbers if one does not exist
+                break
+        
+        # Check ANN URLs for this date
+        for ann_number in range(0, 51):
+            ann_url = f"https://www.europarl.europa.eu/doceo/document/CRE-{cre_number}-{date_str}-ANN-{ann_number}_EN.html"
+            if url_exists(ann_url):
+                urls.append(ann_url)
+            else:
+                # Stop checking further ANN URLs if one does not exist
+                break
+
+        current_date += timedelta(days=1)
+    
+    return urls
+
+def save_to_csv(urls, filename):
+    with open(filename, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(['URL'])  # Header
+        for url in urls:
+            writer.writerow([url])
+
+def clean_csv_file(file_path):
+    """Reads the CSV file, checks URLs, and keeps only those that exist."""
+    valid_urls = []
+    
+    with open(file_path, mode='r', newline='', encoding='utf-8') as file:
+        reader = csv.reader(file)
+        next(reader)  # Skip the header
+        for row in reader:
+            url = row[0]
+            if url_exists(url):
+                valid_urls.append(url)
+                print(f"Valid URL found and saved: {url}")  # Print when a valid URL is found
+    
+    # Overwrite the CSV with only valid URLs
+    with open(file_path, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(['URL'])  # Header
+        for url in valid_urls:
+            writer.writerow([url])
+
+    print(f"Cleaned {file_path}: {len(valid_urls)} valid URLs retained.")
+
+def main():
+    # Parameters to customize
+    start_date = datetime(1999, 1, 1)
+    end_date = datetime(1999, 7, 19)
+    itm_start = 1
+    itm_end = 50
+
+    urls = []
+    url_count = 0
+    file_index = 0
+
+    current_date = start_date
+    
+    while current_date <= end_date:
+        date_str = current_date.strftime('%Y-%m-%d')
+        cre_number = get_cre_number(current_date)
+        
+        for itm in range(itm_start, itm_end + 1):
+            url = f"https://www.europarl.europa.eu/doceo/document/CRE-{cre_number}-{date_str}-ITM-{itm:03d}_EN.html"
+            if url_exists(url):
+                urls.append(url)
+                url_count += 1
+
+                for number in range(1, 50):
+                    # Adjust the format based on the number
+                    if number < 10:
+                        additional_url = f"https://www.europarl.europa.eu/doceo/document/CRE-{cre_number}-{date_str}-ITM-{itm:03d}-0{number}_EN.html"
+                    else:
+                        additional_url = f"https://www.europarl.europa.eu/doceo/document/CRE-{cre_number}-{date_str}-ITM-{itm:03d}-{number}_EN.html"
+
+                    if url_exists(additional_url):
+                        urls.append(additional_url)
+                        url_count += 1
+                    else:
+                        break  # Stop checking further additional URLs for this itm
+            
+            else:
+                break  # Stop checking further itm numbers for this date
+
+        # Check ANN URLs for this date
+        for ann_number in range(1, 51):
+            ann_url = f"https://www.europarl.europa.eu/doceo/document/CRE-{cre_number}-{date_str}-ANN-{ann_number}_EN.html"
+            if url_exists(ann_url):
+                urls.append(ann_url)
+                url_count += 1
+            else:
+                break  # Stop checking further ANN URLs if one does not exist
+
+        if url_count >= 500000:
+            file_name = f'1999-2004_urls_{file_index}.csv'
+            save_to_csv(urls, file_name)
+            print(f"Saved {len(urls)} URLs to '{file_name}'.")
+            clean_csv_file(file_name)
+            urls.clear()
+            url_count = 0
+            file_index += 1
+
+        current_date += timedelta(days=1)
+    
+    # Save and clean any remaining URLs
+    if urls:
+        file_name = f'1999_urls_{file_index}.csv'
+        save_to_csv(urls, file_name)
+        print(f"Saved {len(urls)} URLs to '{file_name}'.")
+        clean_csv_file(file_name)
+
+if __name__ == "__main__":
+    main()
